@@ -29,7 +29,7 @@ export default class AmountInput extends Vue {
   @Prop({ type: Boolean, default: true })
   isSupportQuick: boolean
 
-  @Prop({ type: Number, default: -5 })
+  @Prop({ type: Number, default: 2 })
   precision: number
 
   @Prop({ type: Number, default: 4 })
