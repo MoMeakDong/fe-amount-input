@@ -1,20 +1,30 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <button @click="add">change value</button>
+    <amount-input :value="value" @change="handleChange" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "./components/HelloWorld.vue";
+import { Component, Vue } from 'vue-property-decorator'
+import AmountInput from './components/AmountInput.vue'
 
 @Component({
   components: {
-    HelloWorld,
-  },
+    AmountInput
+  }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  value = 0
+
+  add() {
+    this.value += 1
+  }
+
+  handleChange(value: { amountStr: string; amount: number | null }) {
+    // console.log(111, value)
+  }
+}
 </script>
 
 <style>
