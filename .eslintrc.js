@@ -5,10 +5,10 @@ module.exports = {
   },
   extends: [
     'plugin:vue/essential',
-    "eslint:recommended",
+    'eslint:recommended',
     '@vue/typescript/recommended',
-    "@vue/prettier",
-    "@vue/prettier/@typescript-eslint",
+    '@vue/prettier',
+    '@vue/prettier/@typescript-eslint'
   ],
   parserOptions: {
     ecmaVersion: 2020
@@ -17,13 +17,13 @@ module.exports = {
     'prettier/prettier': [
       'warn',
       {
-        "trailingComma": "none",
-        "jsxBracketSameLine": false
+        trailingComma: 'none',
+        jsxBracketSameLine: false
       }
     ],
-    'no-console': ["warn", { allow: ["warn", "error"] }],
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-else-return': "error",
+    'no-else-return': 'error',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     semi: ['error', 'never'],
@@ -36,7 +36,7 @@ module.exports = {
     'no-plusplus': 0,
     'no-param-reassign': 0,
     'prefer-destructuring': 0,
-    'max-len': ["error", { "code": 140 }],
+    'max-len': ['error', { code: 140 }],
     'no-restricted-syntax': 0,
     'default-case': 0,
     'consistent-return': 0,

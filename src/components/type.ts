@@ -4,3 +4,8 @@ export enum AmountKey {
 }
 
 export enum ValidateEnum {}
+
+export interface AddonAfterProp {
+  name: string
+  open: boolean
+}
