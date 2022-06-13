@@ -4,7 +4,7 @@
       {{ addonBefore.name }}
     </span>
     <input
-      placeholder="请输入"
+      :placeholder="placeholder"
       v-model="amountStr"
       @input="onInput"
       @change="onChangeHandler"
@@ -31,8 +31,12 @@ export default class AmountInput extends Vue {
   private amountStr = ''
   private amount: number | null = null
 
-  @Prop({ type: Number, default: 1984 })
+  @Prop({ type: Number })
   value: number
+
+  @Prop({ type: String, default: '请输入金额' })
+  placeholder: string
+
   @Prop({ type: Boolean, default: true })
   isSupportQuick: boolean
 
