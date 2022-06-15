@@ -96,7 +96,7 @@ export default class AmountInput extends Vue {
   onChangeHandler() {
     if (this.amountStr) {
       if (this.isSupportQuick && mReg.test(this.amountStr)) {
-        let result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))
+        const result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))
         this.amountStr = result
           ? moneyFormat(result.toString(), this.precision, this.roundingMode)
           : ''
