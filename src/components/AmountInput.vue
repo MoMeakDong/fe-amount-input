@@ -132,7 +132,6 @@ export default class AmountInput extends Vue {
   display: flex;
   align-items: center;
   width: 400px;
-  margin: 500px auto;
   border-radius: 4px;
   border: 1px solid #dfe3e5;
   padding: 0 15px;
