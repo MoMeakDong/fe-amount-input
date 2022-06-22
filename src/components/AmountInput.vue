@@ -72,12 +72,6 @@ export default class AmountInput extends Vue {
   @Prop()
   errMsg: string
 
-  @Prop()
-  className: string
-
-  get definedName() {
-    return this.className
-  }
   @Emit('change')
   sendValue(amountStr: string, amount: number | null) {
     return { amountStr, amount }
@@ -87,6 +81,7 @@ export default class AmountInput extends Vue {
   addonAfterFn() {
     return
   }
+
   @Emit('beforeHandle')
   addonBeforeFn() {
     return
