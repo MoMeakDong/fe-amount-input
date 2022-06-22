@@ -1,6 +1,18 @@
-// import { isNumber } from 'lodash'
 import Decimal from 'decimal.js'
 import { moneyReg } from './reg'
+import { EventTarget } from './type'
+
+export const getEventValue = (e: EventTarget): string => {
+  return e.target.value
+}
+
+export const removeNaN = (val: number) => {
+  return Object.is(val, NaN) ? null : val
+}
+
+const tempCount = (precision: number): number => {
+  return Math.pow(10, precision)
+}
 
 /**
  * 格式化金额过滤器
@@ -20,14 +32,6 @@ export const moneyFormat = (moneyStr: string, precision: number, mode: number): 
     return (Object.is(result, NaN) ? '' : result + '').replace(moneyReg, '$&,')
   }
   return (roundingMode(num, precision, mode) + '').replace(moneyReg, '$&,')
-}
-
-export const removeNaN = (val: number) => {
-  return Object.is(val, NaN) ? null : val
-}
-
-const tempCount = (precision: number): number => {
-  return Math.pow(10, precision)
 }
 
 /**

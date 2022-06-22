@@ -9,3 +9,7 @@ export interface AddonAfterProp {
   name: string
   open: boolean
 }
+
+export interface EventTarget {
+  target: HTMLInputElement
+}
