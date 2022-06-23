@@ -113,9 +113,12 @@ export default class AmountInput extends Vue {
       }
       this.amount = removeNaN(Number(this.amountStr.replace(/,/g, '')))
       this.sendValue(this.amountStr, this.amount)
-      this.emptyInfo = ''
-    } else if (this.required) {
-      this.emptyInfo = '请输入金额'
+    } else {
+      this.amount = null
+    }
+    // empty error
+    if (this.required && !this.amount) {
+      this.emptyInfo = this.emptyInfo || '请输入金额'
     } else {
       this.emptyInfo = ''
     }
@@ -156,6 +159,14 @@ export default class AmountInput extends Vue {
       this.amount = 0
     }
   }
+
+  validateAmount(value: number | null, callback: () => void, emptyMsg?: string) {
+    if (!value) {
+      this.emptyInfo = emptyMsg || '请输入金额'
+    } else {
+      callback()
+    }
+  }
 }
 </script>
 <style>
@@ -163,7 +174,6 @@ export default class AmountInput extends Vue {
   text-align: center;
   display: flex;
   align-items: center;
-  width: 400px;
   border-radius: 4px;
   border: 1px solid #dfe3e5;
   padding: 0 15px;
