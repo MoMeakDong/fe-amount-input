@@ -1,39 +1,51 @@
 <template>
-  <div :class="['input-wrapper', definedName, { error: !!errMsg }]">
+  <div
+    :class="[
+      'input-wrapper',
+      { error: !disabled && (!!errMsg || emptyInfo) },
+      disabled ? 'disabled' : 'normal'
+    ]"
+    :style="{
+      '--borderColor': theme
+    }"
+  >
     <span class="addonBefore" v-if="addonBefore && addonBefore.open" @click="addonBeforeFn">
       {{ addonBefore.name }}
     </span>
     <input
-      placeholder="请输入"
+      :placeholder="placeholder"
       v-model="amountStr"
       @input="onInput"
-      @change="onChangeHandler"
+      @blur="onChangeHandler"
       @focus="onFocusHandler"
+      :disabled="disabled"
     />
     <span class="addonAfter" v-if="addonAfter && addonAfter.open" @click="addonAfterFn">
       {{ addonAfter.name }}
     </span>
-    <span class="errNode" v-if="errMsg">{{ errMsg }}</span>
+    <span class="errNode" v-if="!disabled && (errMsg || emptyInfo)">{{ errMsg || emptyInfo }}</span>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch, Emit } from 'vue-property-decorator'
-import { removeNaN, moneyFormat } from './filters'
+import { removeNaN, moneyFormat, getEventValue } from './filters'
 import { mReg, pureNumberReg } from './reg'
-import { AmountKey, AddonAfterProp } from './type'
+import { AmountKey, AddonAfterProp, EventTarget } from './type'
 
-interface EventTarget {
-  target: HTMLInputElement
-}
 @Component
 export default class AmountInput extends Vue {
   private amountStr = ''
   private amount: number | null = null
+  private emptyInfo = ''
 
-  @Prop({ type: Number, default: 1984 })
+  @Prop({ type: Number })
   value: number
-  @Prop({ type: Boolean, default: true })
+
+  @Prop({ type: String })
+  placeholder: string
+
+  @Prop({ type: Boolean, default: false })
   isSupportQuick: boolean
 
   @Prop({ type: Number, default: 2 })
@@ -41,6 +53,15 @@ export default class AmountInput extends Vue {
 
   @Prop({ type: Number, default: 4 })
   roundingMode: number
+
+  @Prop()
+  disabled: boolean
+
+  @Prop()
+  required: boolean
+
+  @Prop()
+  theme: string
 
   @Prop()
   addonBefore: AddonAfterProp
@@ -51,12 +72,6 @@ export default class AmountInput extends Vue {
   @Prop()
   errMsg: string
 
-  @Prop()
-  className: string
-
-  get definedName() {
-    return this.className
-  }
   @Emit('change')
   sendValue(amountStr: string, amount: number | null) {
     return { amountStr, amount }
@@ -66,23 +81,20 @@ export default class AmountInput extends Vue {
   addonAfterFn() {
     return
   }
+
   @Emit('beforeHandle')
   addonBeforeFn() {
     return
   }
 
   onInput(e: EventTarget) {
-    let val = this.getEventValue(e)
+    let val = getEventValue(e)
     if (this.isSupportQuick) {
       this.amountStr = val
     } else {
       val = val.match(pureNumberReg)![0] || ''
       this.amountStr = val
     }
-  }
-
-  getEventValue(e: EventTarget): string {
-    return e.target.value
   }
 
   onFocusHandler() {
@@ -92,15 +104,23 @@ export default class AmountInput extends Vue {
   onChangeHandler() {
     if (this.amountStr) {
       if (this.isSupportQuick && mReg.test(this.amountStr)) {
-        let result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))
+        const result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))
         this.amountStr = result
           ? moneyFormat(result.toString(), this.precision, this.roundingMode)
           : ''
       } else {
         this.amountStr = moneyFormat(this.amountStr, this.precision, this.roundingMode)
       }
-      this.amount = removeNaN(parseFloat(this.amountStr.replace(/,/g, '')))
+      this.amount = removeNaN(Number(this.amountStr.replace(/,/g, '')))
       this.sendValue(this.amountStr, this.amount)
+    } else {
+      this.amount = null
+    }
+    // empty error
+    if (this.required && !this.amount) {
+      this.emptyInfo = this.emptyInfo || '请输入金额'
+    } else {
+      this.emptyInfo = ''
     }
   }
 
@@ -112,13 +132,40 @@ export default class AmountInput extends Vue {
 
   @Watch('value')
   onValueChange(val: number) {
-    this.amountStr = moneyFormat(val.toString(), this.precision, this.roundingMode)
-    this.amount = val
+    if (this.value) {
+      this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
+      this.amount = this.value
+    } else {
+      this.amountStr = ''
+      this.amount = 0
+    }
+  }
+
+  @Watch('disabled')
+  onDisabledChange(val: boolean) {
+    if (val) {
+      this.emptyInfo = ''
+    }
+    this.amount = 0
+    this.amountStr = ''
   }
 
   created() {
-    this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
-    this.amount = this.value
+    if (this.value) {
+      this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
+      this.amount = this.value
+    } else {
+      this.amountStr = ''
+      this.amount = 0
+    }
+  }
+
+  validateAmount(value: number | null, callback: () => void, emptyMsg?: string) {
+    if (!value) {
+      this.emptyInfo = emptyMsg || '请输入金额'
+    } else {
+      callback()
+    }
   }
 }
 </script>
@@ -127,16 +174,21 @@ export default class AmountInput extends Vue {
   text-align: center;
   display: flex;
   align-items: center;
-  width: 400px;
-  margin: 500px auto;
   border-radius: 4px;
   border: 1px solid #dfe3e5;
   padding: 0 15px;
-  height: 40px;
+}
+.disabled {
+  background-color: #f5f7fa;
+}
+.normal {
+  background-color: #fff;
+}
+.input-wrapper:focus-within {
+  border-color: var(--borderColor);
 }
 .input-wrapper input {
   flex: 1;
-  height: 40px;
   line-height: 40px;
   width: 50%;
   border: 0;
@@ -147,12 +199,6 @@ export default class AmountInput extends Vue {
   color: #606266;
   border-radius: 4px;
 }
-/* input:focus {
-  border-color: #66afe9;
-  outline: 0;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
-} */
 
 .addonBefore,
 .addonAfter {
@@ -167,13 +213,13 @@ export default class AmountInput extends Vue {
 }
 
 .error {
-  border-color: #ff4949;
+  border-color: #f56c6c;
   position: relative;
 }
 .error .errNode {
-  color: #ff4949;
+  color: #f56c6c;
   position: absolute;
-  bottom: -20px;
+  bottom: -30px;
   font-size: 12px;
   left: 0;
 }
