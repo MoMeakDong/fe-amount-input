@@ -11,10 +11,11 @@
     <input
       :placeholder="placeholder"
       v-model="amountStr"
+      :disabled="disabled"
       @input="onInput"
       @blur="onChangeHandler"
       @focus="onFocusHandler"
-      :disabled="disabled"
+      @keydown="onTabHandler"
     />
     <span class="addonAfter" v-if="addonAfter && addonAfter.open" @click="addonAfterFn">
       {{ addonAfter.name }}
@@ -111,12 +112,26 @@ export default class AmountInput extends Vue {
       this.sendValue(this.amountStr, this.amount)
     } else {
       this.amount = null
+      this.sendValue(this.amountStr, this.amount)
     }
     // empty error
     if (this.required && !this.amount) {
       this.showErrMsg = this.showErrMsg || this.emptyMsg
     } else {
       this.showErrMsg = ''
+    }
+  }
+
+  onTabHandler(e: KeyboardEvent) {
+    if (e.key === 'Enter' && this.isSupportQuick) {
+      this.onEnterHandler()
+    }
+  }
+
+  onEnterHandler() {
+    if (this.amountStr && mReg.test(this.amountStr)) {
+      const result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))?.toString()
+      this.amountStr = result || ''
     }
   }
 
@@ -131,6 +146,7 @@ export default class AmountInput extends Vue {
     if (this.value) {
       this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
       this.amount = this.value
+      this.showErrMsg = ''
     } else {
       this.amountStr = ''
       this.amount = 0
