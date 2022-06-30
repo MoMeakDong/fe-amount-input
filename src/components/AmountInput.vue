@@ -1,10 +1,6 @@
 <template>
   <div
-    :class="[
-      'input-wrapper',
-      { error: !disabled && (!!errMsg || emptyInfo) },
-      disabled ? 'disabled' : 'normal'
-    ]"
+    :class="['input-wrapper', { error: !disabled && showErrMsg }, disabled ? 'disabled' : 'normal']"
     :style="{
       '--borderColor': theme
     }"
@@ -15,15 +11,16 @@
     <input
       :placeholder="placeholder"
       v-model="amountStr"
+      :disabled="disabled"
       @input="onInput"
       @blur="onChangeHandler"
       @focus="onFocusHandler"
-      :disabled="disabled"
+      @keydown="onTabHandler"
     />
     <span class="addonAfter" v-if="addonAfter && addonAfter.open" @click="addonAfterFn">
       {{ addonAfter.name }}
     </span>
-    <span class="errNode" v-if="!disabled && (errMsg || emptyInfo)">{{ errMsg || emptyInfo }}</span>
+    <span class="errNode" v-if="!disabled && showErrMsg">{{ showErrMsg }}</span>
   </div>
 </template>
 
@@ -37,7 +34,7 @@ import { AmountKey, AddonAfterProp, EventTarget } from './type'
 export default class AmountInput extends Vue {
   private amountStr = ''
   private amount: number | null = null
-  private emptyInfo = ''
+  private showErrMsg = ''
 
   @Prop({ type: Number })
   value: number
@@ -54,6 +51,9 @@ export default class AmountInput extends Vue {
   @Prop({ type: Number, default: 4 })
   roundingMode: number
 
+  @Prop({ type: String, default: '请输入金额' })
+  emptyMsg: string
+
   @Prop()
   disabled: boolean
 
@@ -68,9 +68,6 @@ export default class AmountInput extends Vue {
 
   @Prop()
   addonAfter: AddonAfterProp
-
-  @Prop()
-  errMsg: string
 
   @Emit('change')
   sendValue(amountStr: string, amount: number | null) {
@@ -115,12 +112,26 @@ export default class AmountInput extends Vue {
       this.sendValue(this.amountStr, this.amount)
     } else {
       this.amount = null
+      this.sendValue(this.amountStr, this.amount)
     }
     // empty error
     if (this.required && !this.amount) {
-      this.emptyInfo = this.emptyInfo || '请输入金额'
+      this.showErrMsg = this.showErrMsg || this.emptyMsg
     } else {
-      this.emptyInfo = ''
+      this.showErrMsg = ''
+    }
+  }
+
+  onTabHandler(e: KeyboardEvent) {
+    if (e.key === 'Enter' && this.isSupportQuick) {
+      this.onEnterHandler()
+    }
+  }
+
+  onEnterHandler() {
+    if (this.amountStr && mReg.test(this.amountStr)) {
+      const result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))?.toString()
+      this.amountStr = result || ''
     }
   }
 
@@ -135,6 +146,7 @@ export default class AmountInput extends Vue {
     if (this.value) {
       this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
       this.amount = this.value
+      this.showErrMsg = ''
     } else {
       this.amountStr = ''
       this.amount = 0
@@ -144,7 +156,7 @@ export default class AmountInput extends Vue {
   @Watch('disabled')
   onDisabledChange(val: boolean) {
     if (val) {
-      this.emptyInfo = ''
+      this.showErrMsg = ''
     }
     this.amount = 0
     this.amountStr = ''
@@ -162,7 +174,7 @@ export default class AmountInput extends Vue {
 
   validateAmount(value: number | null, callback: () => void, emptyMsg?: string) {
     if (!value) {
-      this.emptyInfo = emptyMsg || '请输入金额'
+      this.showErrMsg = emptyMsg || this.emptyMsg
     } else {
       callback()
     }
