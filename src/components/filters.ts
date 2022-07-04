@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
 import { moneyReg } from './reg'
-import { EventTarget } from './type'
+import { EventTarget, CurrencyRule } from './type'
 
 export const getEventValue = (e: EventTarget): string => {
   return e.target.value
@@ -12,6 +12,21 @@ export const removeNaN = (val: number) => {
 
 const tempCount = (precision: number): number => {
   return Math.pow(10, precision)
+}
+
+/**
+ * currency 匹配对应规则
+ * @param configs
+ * @param currency
+ * @returns {precision: number, roundingMode:number}
+ */
+export const filterCurrencyRule = (configs: CurrencyRule[], currency: string) => {
+  if (currency && configs && configs.length) {
+    const result = configs.find((item) => item.currency === currency)
+    if (result) return { precision: result.unit, roundingMode: result.roundingMode }
+    return { precision: 2, roundingMode: 4 }
+  }
+  return { precision: 2, roundingMode: 4 }
 }
 
 /**

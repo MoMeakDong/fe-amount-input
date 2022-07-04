@@ -13,3 +13,9 @@ export interface AddonAfterProp {
 export interface EventTarget {
   target: HTMLInputElement
 }
+
+export interface CurrencyRule {
+  currency: string
+  unit: number
+  roundingMode: number
+}

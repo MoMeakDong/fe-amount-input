@@ -2,7 +2,7 @@
   <div
     :class="['input-wrapper', { error: !disabled && showErrMsg }, disabled ? 'disabled' : 'normal']"
     :style="{
-      '--borderColor': theme
+      '--borderColor': theme || $theme
     }"
   >
     <span class="addonBefore" v-if="addonBefore && addonBefore.open" @click="addonBeforeFn">
@@ -26,9 +26,9 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch, Emit } from 'vue-property-decorator'
-import { removeNaN, moneyFormat, getEventValue } from './filters'
+import { removeNaN, moneyFormat, getEventValue, filterCurrencyRule } from './filters'
 import { mReg, pureNumberReg } from './reg'
-import { AmountKey, AddonAfterProp, EventTarget } from './type'
+import { AmountKey, AddonAfterProp, EventTarget, CurrencyRule } from './type'
 
 @Component
 export default class AmountInput extends Vue {
@@ -45,10 +45,13 @@ export default class AmountInput extends Vue {
   @Prop({ type: Boolean, default: false })
   isSupportQuick: boolean
 
-  @Prop({ type: Number, default: 2 })
+  @Prop()
+  currency: string
+
+  @Prop()
   precision: number
 
-  @Prop({ type: Number, default: 4 })
+  @Prop()
   roundingMode: number
 
   @Prop({ type: String, default: '请输入金额' })
@@ -83,6 +86,15 @@ export default class AmountInput extends Vue {
   addonBeforeFn() {
     return
   }
+  get currencyRule() {
+    if (this.precision || this.roundingMode) {
+      return {
+        precision: this.precision || 2,
+        roundingMode: this.roundingMode || 4
+      }
+    }
+    return filterCurrencyRule(this.$currencyConfigs, this.currency)
+  }
 
   onInput(e: EventTarget) {
     let val = getEventValue(e)
@@ -103,10 +115,18 @@ export default class AmountInput extends Vue {
       if (this.isSupportQuick && mReg.test(this.amountStr)) {
         const result = removeNaN(this.convertQuickInputToRealAmount(this.amountStr))
         this.amountStr = result
-          ? moneyFormat(result.toString(), this.precision, this.roundingMode)
+          ? moneyFormat(
+              result.toString(),
+              this.currencyRule.precision,
+              this.currencyRule.roundingMode
+            )
           : ''
       } else {
-        this.amountStr = moneyFormat(this.amountStr, this.precision, this.roundingMode)
+        this.amountStr = moneyFormat(
+          this.amountStr,
+          this.currencyRule.precision,
+          this.currencyRule.roundingMode
+        )
       }
       this.amount = removeNaN(Number(this.amountStr.replace(/,/g, '')))
       this.sendValue(this.amountStr, this.amount)
@@ -144,7 +164,11 @@ export default class AmountInput extends Vue {
   @Watch('value')
   onValueChange(val: number) {
     if (this.value) {
-      this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
+      this.amountStr = moneyFormat(
+        this.value.toString(),
+        this.currencyRule.precision,
+        this.currencyRule.roundingMode
+      )
       this.amount = this.value
       this.showErrMsg = ''
     } else {
@@ -164,7 +188,11 @@ export default class AmountInput extends Vue {
 
   created() {
     if (this.value) {
-      this.amountStr = moneyFormat(this.value.toString(), this.precision, this.roundingMode)
+      this.amountStr = moneyFormat(
+        this.value.toString(),
+        this.currencyRule.precision,
+        this.currencyRule.roundingMode
+      )
       this.amount = this.value
     } else {
       this.amountStr = ''
@@ -178,6 +206,13 @@ export default class AmountInput extends Vue {
     } else {
       callback()
     }
+  }
+  static setTheme(theme: string) {
+    Vue.prototype.$theme = theme
+  }
+
+  static setCurrencyConfigs(rules: CurrencyRule[]) {
+    Vue.prototype.$currencyConfigs = rules
   }
 }
 </script>
