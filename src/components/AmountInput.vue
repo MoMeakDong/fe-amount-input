@@ -8,15 +8,18 @@
     <span class="addonBefore" v-if="addonBefore && addonBefore.open" @click="addonBeforeFn">
       {{ addonBefore.name }}
     </span>
-    <input
-      :placeholder="placeholder"
-      v-model="amountStr"
-      :disabled="disabled"
-      @input="onInput"
-      @blur="onChangeHandler"
-      @focus="onFocusHandler"
-      @keydown="onTabHandler"
-    />
+    <div class="inputInner">
+      <input
+        :placeholder="placeholder"
+        v-model="amountStr"
+        :disabled="disabled"
+        @input="onInput"
+        @blur="onChangeHandler"
+        @focus="onFocusHandler"
+        @keydown="onTabHandler"
+      />
+      <button v-if="amountStr && clearable" class="clearIcon" @click="resetHandler">+</button>
+    </div>
     <span class="addonAfter" v-if="addonAfter && addonAfter.open" @click="addonAfterFn">
       {{ addonAfter.name }}
     </span>
@@ -57,11 +60,14 @@ export default class AmountInput extends Vue {
   @Prop({ type: String, default: '请输入金额' })
   emptyMsg: string
 
-  @Prop()
+  @Prop({ type: Boolean })
   disabled: boolean
 
-  @Prop()
+  @Prop({ type: Boolean })
   required: boolean
+
+  @Prop({ type: Boolean })
+  clearable: boolean
 
   @Prop()
   theme: string
@@ -161,6 +167,13 @@ export default class AmountInput extends Vue {
     return Number(input.substring(0, input.length - 1)) * multiplier
   }
 
+  resetHandler(event: Event) {
+    event.preventDefault()
+    this.amountStr = ''
+    this.amount = null
+    this.sendValue(this.amountStr, this.amount)
+  }
+
   @Watch('value')
   onValueChange(val: number) {
     if (this.value) {
@@ -234,10 +247,13 @@ export default class AmountInput extends Vue {
 .input-wrapper:focus-within {
   border-color: var(--borderColor);
 }
-.input-wrapper input {
+.inputInner {
   flex: 1;
+  position: relative;
+}
+.inputInner input {
   line-height: 40px;
-  width: 50%;
+  width: 100%;
   border: 0;
   outline: none;
   font-size: 14px;
@@ -269,5 +285,36 @@ export default class AmountInput extends Vue {
   bottom: -30px;
   font-size: 12px;
   left: 0;
+  text-align: left;
+}
+.clearIcon {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 12px;
+  transform: rotate(45deg);
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  height: 18px;
+  width: 18px;
+  color: #ddd;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+.clearIcon:hover {
+  color: #ccc;
+  border-color: #ccc;
+}
+.input-wrapper:focus-within .clearIcon {
+  display: inline-block;
+}
+
+input::-webkit-input-placeholder {
+  color: #c0c4cc;
+}
+input::-moz-placeholder {
+  /* Mozilla Firefox 19+ */
+  color: #c0c4cc;
 }
 </style>
