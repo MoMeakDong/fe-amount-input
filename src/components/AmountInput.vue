@@ -2,7 +2,7 @@
   <div
     :class="['input-wrapper', { error: !disabled && showErrMsg }, disabled ? 'disabled' : 'normal']"
     :style="{
-      '--borderColor': theme || $theme
+      '--borderColor': theme || $theme || '#409eff'
     }"
   >
     <span class="addonBefore" v-if="addonBefore && addonBefore.open" @click="addonBeforeFn">
