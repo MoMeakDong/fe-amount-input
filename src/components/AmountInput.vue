@@ -243,6 +243,8 @@ export default class AmountInput extends Vue {
   border-radius: 4px;
   border: 1px solid #dfe3e5;
   padding: 0 15px;
+  height: 40px;
+  box-sizing: border-box;
 }
 .disabled {
   background-color: #f5f7fa;
@@ -258,7 +260,7 @@ export default class AmountInput extends Vue {
   position: relative;
 }
 .inputInner input {
-  line-height: 40px;
+  line-height: 38px;
   width: 100%;
   border: 0;
   outline: none;
