@@ -18,7 +18,9 @@
         @focus="onFocusHandler"
         @keydown="onTabHandler"
       />
-      <button v-if="amountStr && clearable" class="clearIcon" @click="resetHandler">+</button>
+      <button v-if="amountStr && clearable" class="clearIcon" type="button" @click="resetHandler">
+        +
+      </button>
     </div>
     <span class="addonAfter" v-if="addonAfter && addonAfter.open" @click="addonAfterFn">
       {{ addonAfter.name }}
