@@ -2,7 +2,7 @@
   <div
     :class="['input-wrapper', { error: !disabled && showErrMsg }, disabled ? 'disabled' : 'normal']"
     :style="{
-      '--borderColor': theme || $theme || '#409eff'
+      '--borderColor': themeCurrent
     }"
   >
     <span class="addonBefore" v-if="addonBefore && addonBefore.open" @click="addonBeforeFn">
@@ -101,7 +101,11 @@ export default class AmountInput extends Vue {
         roundingMode: this.roundingMode || 4
       }
     }
-    return filterCurrencyRule(this.$currencyConfigs, this.currency)
+    return filterCurrencyRule(this.$currencyConfigs || [], this.currency)
+  }
+
+  get themeCurrent() {
+    return this.theme || this.$theme || '#409eff'
   }
 
   onInput(e: EventTarget) {
