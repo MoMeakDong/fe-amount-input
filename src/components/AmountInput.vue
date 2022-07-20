@@ -309,6 +309,7 @@ export default class AmountInput extends Vue {
   background: none;
   padding: 0;
   cursor: pointer;
+  line-height: 1;
 }
 .clearIcon:hover {
   color: #ccc;
