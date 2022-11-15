@@ -182,7 +182,7 @@ export default class AmountInput extends Vue {
 
   @Watch('value')
   onValueChange(val: number) {
-    if (this.value) {
+    if (this.value !== null) {
       this.amountStr = moneyFormat(
         this.value.toString(),
         this.currencyRule.precision,
